@@ -26,27 +26,30 @@ int update_hotbar(void) {
   return selectedSlot;
 }
 
-void draw_hotbar(Texture2D texture, Rectangle source, int *slots,
+void draw_hotbar(Texture2D *texture, Rectangle source, int *slots,
                  int numSlots) {
-  int tilesPerRow = (texture.width - (int)source.x) / (int)source.width;
+  int tilesPerRow = (texture->width - (int)source.x) / (int)source.width;
   int totalWidth =
       HOTBAR_NUM_SLOTS * (HOTBAR_TILE_SIZE + HOTBAR_PADDING) - HOTBAR_PADDING;
   int hotbarX = (SCREEN_WIDTH - totalWidth) / 2;
   int hotbarY = SCREEN_HEIGHT - HOTBAR_TILE_SIZE - 10;
 
+  // TraceLog(LOG_INFO, "--> %d", numSlots);
+
   int id, x;
   Rectangle dest, curSource = source;
   for (int i = 0; i < numSlots; i++) {
     id = slots[i];
-    curSource =
-        (Rectangle){source.x + (float)(id % tilesPerRow) * source.width,
-                    source.y + (float)(id / tilesPerRow) * source.height,
-                    source.width, source.height};
+
+    curSource = (Rectangle){source.x + (id % tilesPerRow) * source.width,
+                            source.y + (id / tilesPerRow) * source.height,
+                            source.width, source.height};
+
     x = hotbarX + i * (HOTBAR_TILE_SIZE + HOTBAR_PADDING);
     dest = (Rectangle){x, hotbarY, HOTBAR_TILE_SIZE, HOTBAR_TILE_SIZE};
 
     DrawRectangleRec(dest, Fade(BLACK, 0.5f));
-    DrawTexturePro(texture, curSource, dest, (Vector2){0, 0}, 0.0f, WHITE);
+    DrawTexturePro(*texture, curSource, dest, (Vector2){0, 0}, 0.0f, WHITE);
 
     if (i == selectedSlot)
       DrawRectangleLinesEx(dest, 2, GREEN);

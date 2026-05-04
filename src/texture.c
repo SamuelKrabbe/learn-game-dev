@@ -31,14 +31,6 @@ void load_character_textures(Textures *textures) {
   FilePathList texturesPath =
       LoadDirectoryFilesEx("assets/characters", FILE_FILTER, true);
 
-  // TraceLog(LOG_INFO, "Tileset file count: %d", texturesPath.count);
-  //
-  // if (texturesPath.count > TEXTURES_MAX_LENGTH) {
-  //   TraceLog(LOG_ERROR, "Too many textures! Increase TEXTURES_MAX_LENGTH");
-  //   UnloadDirectoryFiles(texturesPath);
-  //   return;
-  // }
-
   for (unsigned int i = 0; i < texturesPath.count; i++) {
     textures->characterTextures[i] = LoadTexture(texturesPath.paths[i]);
     SetTextureFilter(textures->characterTextures[i], TEXTURE_FILTER_POINT);
@@ -76,16 +68,19 @@ void load_particle_textures(Textures *textures) {
 }
 
 void load_tileset_textures(Textures *textures) {
-  FilePathList texturesPath =
-      LoadDirectoryFilesEx("assets/tilesets", FILE_FILTER, true);
+  // FilePathList texturesPath =
+  //     LoadDirectoryFilesEx("assets/tilesets", FILE_FILTER, true);
+  //
+  // for (unsigned int i = 0; i < texturesPath.count; i++) {
+  //   textures->tilesetTextures[i] = LoadTexture(texturesPath.paths[i]);
+  //   SetTextureFilter(textures->tilesetTextures[i], TEXTURE_FILTER_POINT);
+  // }
 
-  for (unsigned int i = 0; i < texturesPath.count; i++) {
-    textures->tilesetTextures[i] = LoadTexture(texturesPath.paths[i]);
-    SetTextureFilter(textures->tilesetTextures[i], TEXTURE_FILTER_POINT);
-  }
+  textures->tilesetTextures[0] = LoadTexture("assets/tilesets/base.png");
+  SetTextureFilter(textures->tilesetTextures[0], TEXTURE_FILTER_POINT);
 
-  textures->tilesetTexturesCount = texturesPath.count;
-  UnloadDirectoryFiles(texturesPath);
+  textures->tilesetTexturesCount = 1;
+  // UnloadDirectoryFiles(texturesPath);
 }
 
 void unload_textures(Textures *textures) {

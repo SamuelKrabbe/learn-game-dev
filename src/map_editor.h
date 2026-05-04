@@ -5,9 +5,6 @@
 #include "raylib.h"
 #include "texture.h"
 
-#define ROWS 500
-#define COLS 500
-
 typedef enum {
   TILE_EMPTY = 0,
   TILE_EDGE,
@@ -18,12 +15,13 @@ typedef enum {
 } TileID;
 
 typedef struct {
-  bool logicalGrid[ROWS][COLS];
-  unsigned int visualGrid[ROWS + 1][COLS + 1];
-} map;
+  bool logicalGrid[MAP_HEIGHT][MAP_WIDTH];
+  unsigned int visualGrid[MAP_HEIGHT + 1][MAP_WIDTH + 1];
+} Map;
 
 void update_grid(Camera2D *camera, int seletedHotbarSlot);
 void draw_grid(Camera2D *camera, Textures *textures);
+void rebuild_visual_grid();
 void save_map();
 
 #endif

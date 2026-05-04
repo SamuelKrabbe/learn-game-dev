@@ -11,6 +11,7 @@ typedef struct {
 
 void draw_ui(UiFlags *flags);
 int update_hotbar(void);
-void draw_hotbar(Texture2D texture, Rectangle source, int *slots, int numSlots);
+void draw_hotbar(Texture2D *texture, Rectangle source, int *slots,
+                 int numSlots);
 
 #endif

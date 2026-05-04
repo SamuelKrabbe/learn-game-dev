@@ -12,8 +12,8 @@
 #define MAX_FRAME_SPEED 15.0
 #define MIN_FRAME_SPEED 1.0f
 
-#define HOTBAR_NUM_SLOTS 7
+#define HOTBAR_NUM_SLOTS 6
 #define HOTBAR_PADDING 4
-#define HOTBAR_TILE_SIZE 40
+#define HOTBAR_TILE_SIZE 32
 
 #endif
