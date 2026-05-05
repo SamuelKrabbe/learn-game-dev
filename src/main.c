@@ -14,9 +14,8 @@ int main(void) {
   uiFlags.editMode = true;
   uiFlags.debugMode = false;
 
-  int mapHotbarSlots[HOTBAR_NUM_SLOTS] = {TILE_EMPTY,       TILE_EDGE,
-                                          TILE_DOUBLE_NUCK, TILE_STRAIGHT,
-                                          TILE_NUCK,        TILE_FULL};
+  int mapHotbarSlots[HOTBAR_NUM_SLOTS] = {TILE_CORNER, TILE_DOUBLE_NUCK,
+                                          TILE_EDGE, TILE_NUCK, TILE_FULL};
 
   int itemHotbarSlots[HOTBAR_NUM_SLOTS] = {0};
 
@@ -75,7 +74,7 @@ int main(void) {
 
     draw_ui(&uiFlags);
     if (uiFlags.editMode) {
-      draw_hotbar(&textures.tilesetTextures[0], (Rectangle){32, 0, 32, 32},
+      draw_hotbar(&textures.tilesetTextures[0], (Rectangle){0, 0, 32, 32},
                   mapHotbarSlots, HOTBAR_NUM_SLOTS);
     } else {
       draw_hotbar(&textures.objectTextures[0], (Rectangle){0, 0, 16, 16},

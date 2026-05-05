@@ -40,7 +40,7 @@ void draw_grid(Camera2D *camera, Textures *textures) {
   int textureWidth = textures->tilesetTextures[0].width;
   int textureHeight = textures->tilesetTextures[0].height;
 
-  Rectangle source = {32, 0, 32, 32};
+  Rectangle source = {0, 0, 32, 32};
   Rectangle curSource = source;
   int tileW = (int)source.width;
   int tileH = (int)source.height;
@@ -51,14 +51,21 @@ void draw_grid(Camera2D *camera, Textures *textures) {
     for (int x = 0; x < MAP_WIDTH + 1; x++) {
       int tile = map.visualGrid[y][x];
       if (tile > 0) {
-        int index = tile - 1; // 0-based index into tileset
+        TileInfo info = get_tile_info(tile);
+        int index = info.tile;
+
         Rectangle curSource = {source.x + (index % tilesPerRow) * tileW,
                                source.y + (index / tilesPerRow) * tileH,
                                source.width, source.height};
-        DrawTexturePro(textures->tilesetTextures[0], curSource,
-                       (Rectangle){(x * TILE_SIZE) - 16, (y * TILE_SIZE) - 16,
-                                   TILE_SIZE, TILE_SIZE},
-                       (Vector2){0, 0}, 0.0f, WHITE);
+
+        float cx = (x * TILE_SIZE) - 16 + TILE_SIZE / 2.0f;
+        float cy = (y * TILE_SIZE) - 16 + TILE_SIZE / 2.0f;
+
+        DrawTexturePro(
+            textures->tilesetTextures[0], curSource,
+            (Rectangle){cx, cy, TILE_SIZE, TILE_SIZE},
+            (Vector2){TILE_SIZE / 2.0f, TILE_SIZE / 2.0f}, // origin = center
+            info.rotation, WHITE);
       }
     }
   }
@@ -67,25 +74,69 @@ void draw_grid(Camera2D *camera, Textures *textures) {
 }
 
 void rebuild_visual_grid() {
-  // Clear visual grid
-  for (int y = 0; y < MAP_HEIGHT; y++) {
-    for (int x = 0; x < MAP_WIDTH; x++) {
+  for (int y = 0; y < MAP_HEIGHT + 1; y++)
+    for (int x = 0; x < MAP_WIDTH + 1; x++)
       map.visualGrid[y][x] = 0;
+
+  for (int vy = 0; vy < MAP_HEIGHT + 1; vy++) {
+    for (int vx = 0; vx < MAP_WIDTH + 1; vx++) {
+      // The 4 logical cells surrounding this visual cell
+      // Clamp to grid bounds, out-of-bounds = 0
+      int topLeft = (vy > 0 && vx > 0) ? map.logicalGrid[vy - 1][vx - 1] : 0;
+      int topRight =
+          (vy > 0 && vx < MAP_WIDTH) ? map.logicalGrid[vy - 1][vx] : 0;
+      int botLeft =
+          (vy < MAP_HEIGHT && vx > 0) ? map.logicalGrid[vy][vx - 1] : 0;
+      int botRight =
+          (vy < MAP_HEIGHT && vx < MAP_WIDTH) ? map.logicalGrid[vy][vx] : 0;
+
+      map.visualGrid[vy][vx] =
+          (topLeft << 3) | (topRight << 2) | (botLeft << 1) | botRight;
     }
   }
+}
 
-  // Expand logical into visual (2x2 example)
-  for (int ly = 0; ly < MAP_HEIGHT; ly++) {
-    for (int lx = 0; lx < MAP_WIDTH; lx++) {
-      int tile = map.logicalGrid[ly][lx];
+TileInfo get_tile_info(int bitmask) {
+  switch (bitmask) {
+  case 0b0000:
+    return (TileInfo){TILE_EMPTY, 0};
+  case 0b1111:
+    return (TileInfo){TILE_FULL, 0};
 
-      if (tile == 1) {
-        map.visualGrid[ly][lx] = tile;              // top-left
-        map.visualGrid[ly][lx + 1] = tile << 1;     // top-right
-        map.visualGrid[ly + 1][lx] = tile << 2;     // bottom-left
-        map.visualGrid[ly + 1][lx + 1] = tile << 3; // bottom-right
-      }
-    }
+  case 0b0100:
+    return (TileInfo){TILE_CORNER, 0};
+  case 0b0001:
+    return (TileInfo){TILE_CORNER, 90};
+  case 0b0010:
+    return (TileInfo){TILE_CORNER, 180};
+  case 0b1000:
+    return (TileInfo){TILE_CORNER, 270};
+
+  case 0b0011:
+    return (TileInfo){TILE_EDGE, 0};
+  case 0b1010:
+    return (TileInfo){TILE_EDGE, 90};
+  case 0b1100:
+    return (TileInfo){TILE_EDGE, 180};
+  case 0b0101:
+    return (TileInfo){TILE_EDGE, 270};
+
+  case 0b0111:
+    return (TileInfo){TILE_NUCK, 0};
+  case 0b1011:
+    return (TileInfo){TILE_NUCK, 90};
+  case 0b1110:
+    return (TileInfo){TILE_NUCK, 180};
+  case 0b1101:
+    return (TileInfo){TILE_NUCK, 270};
+
+  case 0b1001:
+    return (TileInfo){TILE_DOUBLE_NUCK, 0};
+  case 0b0110:
+    return (TileInfo){TILE_DOUBLE_NUCK, 90};
+
+  default:
+    return (TileInfo){TILE_EMPTY, 0};
   }
 }
 
