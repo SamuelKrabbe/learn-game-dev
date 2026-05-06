@@ -1,4 +1,4 @@
-CC = gcc
+CC = g++
 CFLAGS = -Wall -Wextra -std=c11 -I.
 LDFLAGS = -lraylib -lm -ldl -lpthread -lX11
 
