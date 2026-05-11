@@ -1,5 +1,5 @@
-CC = g++
-CFLAGS = -Wall -Wextra -std=c11 -I.
+CXX ?= c++
+CFLAGS = -Wall -Wextra -std=c++20 -I.
 LDFLAGS = -lraylib -lm -ldl -lpthread -lX11
 
 SRC = $(wildcard src/*.c)
@@ -10,11 +10,11 @@ all: $(BIN)
 
 $(BIN): $(OBJ)
 	mkdir -p bin
-	$(CC) $(OBJ) -o $(BIN) $(LDFLAGS)
+	$(CXX) $(OBJ) -o $(BIN) $(LDFLAGS)
 
-build/%.o: src/%.c
+build/%.o: src/%.cpp
 	mkdir -p build
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CXX) $(CFLAGS) -c $< -o $@
 
 run: all
 	./$(BIN)
