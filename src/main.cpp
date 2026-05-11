@@ -1,7 +1,7 @@
 #include "camera.h"
 #include "constants.h"
-#include "entity.h"
 #include "map_editor.h"
+#include "player.h"
 #include "raygui.h"
 #include "raylib.h"
 #include "texture.h"
@@ -10,9 +10,11 @@
 int main(void) {
   InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Sunny Acres");
 
-  UiFlags uiFlags = {0};
+  UiFlags uiFlags{0};
   uiFlags.editMode = true;
   uiFlags.debugMode = false;
+
+  Map map{};
 
   int mapHotbarSlots[HOTBAR_NUM_SLOTS] = {TILE_CORNER, TILE_DOUBLE_NUCK,
                                           TILE_EDGE, TILE_NUCK, TILE_FULL};
@@ -24,15 +26,12 @@ int main(void) {
   Textures textures = create_textures();
   load_textures(&textures);
 
-  Entity player = create_entity(
-      textures.characterTextures[0],
-      (Vector2){SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f}, (Vector2){48, 48});
+  Player player{textures.characterTextures[0],
+                (Vector2){SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f},
+                (Vector2){48, 48}};
 
-  Camera2D camera = {0};
-  camera.target = player.pos;
-  camera.offset = (Vector2){SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f};
-  camera.rotation = 0.0f;
-  camera.zoom = 1.0f;
+  Vector2 offset{SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f};
+  Camera2d camera{player.get_pos(), offset, 0.0f, 1.0f};
 
   SetTargetFPS(60);
 
@@ -42,32 +41,28 @@ int main(void) {
     selectedHotbarSlot = update_hotbar();
 
     if (uiFlags.editMode)
-      update_grid(&camera, selectedHotbarSlot);
+      map.update_grid(camera.get_cam(), selectedHotbarSlot);
     else
-      update_entity(&player, delta);
+      player.update(delta);
 
-    update_camera(&camera, &player, delta);
+    camera.update(&player, delta);
 
     if (IsKeyDown(KEY_LEFT_CONTROL)) {
       float wheel = GetMouseWheelMove();
 
       if (wheel != 0) {
-        camera_zoom_at(&camera, GetMousePosition(), wheel);
+        camera.zoom_at(GetMousePosition(), wheel);
       }
     }
 
     BeginDrawing();
     ClearBackground(RAYWHITE);
-    BeginMode2D(camera);
-
-    // DrawTexturePro(scene, (Rectangle){0, 0, scene.width, scene.height},
-    //                (Rectangle){0, 0, scene.width, scene.height},
-    //                (Vector2){0, 0}, 0.0, WHITE);
+    BeginMode2D(*camera.get_cam());
 
     if (uiFlags.editMode) {
-      draw_grid(&camera, &textures);
+      map.draw_grid(camera.get_cam(), &textures);
     } else {
-      draw_entity(&player);
+      player.draw();
     }
 
     EndMode2D();

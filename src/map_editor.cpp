@@ -3,14 +3,13 @@
 #include "raylib.h"
 #include "texture.h"
 
-static Map map = {0};
 static int selectedTile = 0;
 
-void update_grid(Camera2D *camera, int selectedHotbarSlot) {
+void Map::update_grid(Camera2D *camera, int selectedHotbarSlot) {
   selectedTile = selectedHotbarSlot;
 }
 
-void draw_grid(Camera2D *camera, Textures *textures) {
+void Map::draw_grid(Camera2D *camera, Textures *textures) {
   // --- Logical Grid lines ---
   for (int x = 0; x <= MAP_WIDTH; x++)
     DrawLine(x * TILE_SIZE, 0, x * TILE_SIZE, MAP_HEIGHT * TILE_SIZE,
@@ -28,10 +27,10 @@ void draw_grid(Camera2D *camera, Textures *textures) {
                        TILE_SIZE, GREEN);
 
     if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-      map.logicalGrid[tileY][tileX] = 1; // 1 for occupied 0 otherwise
+      this->logicalGrid[tileY][tileX] = 1; // 1 for occupied 0 otherwise
     }
     if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
-      map.logicalGrid[tileY][tileX] = 0;
+      this->logicalGrid[tileY][tileX] = 0;
     }
   }
 
@@ -49,13 +48,13 @@ void draw_grid(Camera2D *camera, Textures *textures) {
   // --- Draw placed tiles ---
   for (int y = 0; y < MAP_HEIGHT + 1; y++) {
     for (int x = 0; x < MAP_WIDTH + 1; x++) {
-      int tile = map.visualGrid[y][x];
+      int tile = this->visualGrid[y][x];
       if (tile > 0) {
         TileInfo info = get_tile_info(tile);
         int index = info.tile;
 
         Rectangle curSource = {source.x + (index % tilesPerRow) * tileW,
-                               source.y + (index / tilesPerRow) * tileH,
+                               source.y + ((float)index / tilesPerRow) * tileH,
                                source.width, source.height};
 
         float cx = (x * TILE_SIZE) - 16 + TILE_SIZE / 2.0f;
@@ -73,30 +72,30 @@ void draw_grid(Camera2D *camera, Textures *textures) {
   save_map();
 }
 
-void rebuild_visual_grid() {
+void Map::rebuild_visual_grid() {
   for (int y = 0; y < MAP_HEIGHT + 1; y++)
     for (int x = 0; x < MAP_WIDTH + 1; x++)
-      map.visualGrid[y][x] = 0;
+      this->visualGrid[y][x] = 0;
 
   for (int vy = 0; vy < MAP_HEIGHT + 1; vy++) {
     for (int vx = 0; vx < MAP_WIDTH + 1; vx++) {
       // The 4 logical cells surrounding this visual cell
       // Clamp to grid bounds, out-of-bounds = 0
-      int topLeft = (vy > 0 && vx > 0) ? map.logicalGrid[vy - 1][vx - 1] : 0;
+      int topLeft = (vy > 0 && vx > 0) ? this->logicalGrid[vy - 1][vx - 1] : 0;
       int topRight =
-          (vy > 0 && vx < MAP_WIDTH) ? map.logicalGrid[vy - 1][vx] : 0;
+          (vy > 0 && vx < MAP_WIDTH) ? this->logicalGrid[vy - 1][vx] : 0;
       int botLeft =
-          (vy < MAP_HEIGHT && vx > 0) ? map.logicalGrid[vy][vx - 1] : 0;
+          (vy < MAP_HEIGHT && vx > 0) ? this->logicalGrid[vy][vx - 1] : 0;
       int botRight =
-          (vy < MAP_HEIGHT && vx < MAP_WIDTH) ? map.logicalGrid[vy][vx] : 0;
+          (vy < MAP_HEIGHT && vx < MAP_WIDTH) ? this->logicalGrid[vy][vx] : 0;
 
-      map.visualGrid[vy][vx] =
+      this->visualGrid[vy][vx] =
           (topLeft << 3) | (topRight << 2) | (botLeft << 1) | botRight;
     }
   }
 }
 
-TileInfo get_tile_info(int bitmask) {
+TileInfo Map::get_tile_info(int bitmask) {
   switch (bitmask) {
   case 0b0000:
     return (TileInfo){TILE_EMPTY, 0};
